@@ -1,0 +1,6 @@
+streamlit
+pandas
+ccxt
+pandas-ta
+pytz
+plotly
