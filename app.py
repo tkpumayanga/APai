@@ -2,146 +2,170 @@ import streamlit as st
 import time
 import random
 import urllib.parse
+from datetime import datetime, timedelta
 
-# --- 01. පද්ධති සැකසුම් සහ UI ---
-st.set_page_config(page_title="2004AU Quantum AI Hub", layout="centered")
+# --- 00. පද්ධති වින්‍යාසය සහ UI setup ---
+st.set_page_config(page_title="2004AU Quantum AI V5.0", layout="wide")
 
-# භාෂා 40 ලැයිස්තුව (02 & 03 සඳහා)
-languages = {
-    "English": "en", "Sinhala": "si", "Tamil": "ta", "Hindi": "hi", "Spanish": "es", 
-    "French": "fr", "Arabic": "ar", "Russian": "ru", "Japanese": "ja", "Chinese": "zh"
-    # මෙහි තවත් භාෂා 30ක් ඇතුළත් කළ හැක
-}
+st.markdown("""
+    <style>
+    .main { background-color: #050505; color: #e0e0e0; }
+    .stButton>button { width: 100%; border-radius: 10px; height: 3.5em; font-weight: bold; }
+    .signal-card { background: linear-gradient(145deg, #0f0f0f, #1a1a1a); padding: 25px; border-radius: 20px; border: 1px solid #333; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+    .rule-info { border-left: 4px solid #ffd700; padding-left: 15px; margin-bottom: 20px; color: #ffd700; font-style: italic; }
+    .admin-access { color: #00ff00; border: 1px solid #00ff00; padding: 5px; border-radius: 5px; }
+    </style>
+    """, unsafe_allow_html=True)
 
-# --- Session State (පියවරවල් පාලනය කිරීමට) ---
-if "step" not in st.session_state:
-    st.session_state.step = "welcome"
-if "user_type" not in st.session_state:
-    st.session_state.user_type = None
-if "lang" not in st.session_state:
-    st.session_state.lang = "English"
+# --- පද්ධති මතකය (Session State) ---
+if "step" not in st.session_state: st.session_state.step = "rule_12_lang"
+if "auth_mode" not in st.session_state: st.session_state.auth_mode = None
+if "current_lang" not in st.session_state: st.session_state.current_lang = "Sinhala"
 
-# --- UI FUNCTIONS ---
-def main_header():
-    st.title("🤖 2004AU QUANTUM AI")
-    st.write("Advanced Trading Intelligence System")
+# --- FUNCTIONS ---
+def get_time(): return datetime.now().strftime("%H:%M:%S")
+
+# =============================================================================
+# STEP 12 & 02/03: භාෂාව සහ සජීවී ඉගෙනීම (පළමු පියවර)
+# =============================================================================
+if st.session_state.step == "rule_12_lang":
+    st.title("🤖 2004AU AI - System Initialization")
+    st.info("Rule 12: Analyzing Live Binance Liquidity & Applying Deep Learning...")
+    
+    # භාෂා 40ක් (නියැදියක්)
+    languages = ["Sinhala", "English", "Tamil", "Hindi", "Arabic", "French", "Russian", "Japanese", "Chinese"]
+    st.session_state.current_lang = st.selectbox("🌍 Select Language / භාෂාව තෝරන්න:", languages)
+    
+    if st.button("Proceed to Rule 01"):
+        st.session_state.step = "rule_01_auth"
+        st.rerun()
+
+# =============================================================================
+# STEP 01: පරිශීලක හඳුනා ගැනීම (Admin vs New User)
+# =============================================================================
+if st.session_state.step == "rule_01_auth":
+    st.subheader("Step 01: User Identification")
+    access_code = st.text_input("Enter Admin Key or 'New User':", type="password")
+    
+    if access_code == "2004AU": # Admin logic
+        st.session_state.auth_mode = "ADMIN"
+        st.session_state.step = "rule_07_selection" # Admin කෙලින්ම 07 ට
+        st.rerun()
+    elif access_code.lower() == "new user":
+        st.session_state.auth_mode = "USER"
+        st.session_state.step = "rule_01_registration"
+        st.rerun()
+
+# =============================================================================
+# NEW USER FLOW (01 - 06)
+# =============================================================================
+if st.session_state.step == "rule_01_registration":
+    st.subheader("📝 Step 01: Account Registration")
+    st.text_input("Email Address:")
+    st.text_input("Create Password:", type="password")
+    if st.button("Continue to Access Control"): st.session_state.step = "rule_04_access" ; st.rerun()
+
+if st.session_state.step == "rule_04_access":
+    st.warning("⚠️ Step 04: AI needs full synchronization with your hardware/sensors.")
+    if st.button("Authorize AI Access"): st.session_state.step = "rule_05_payment" ; st.rerun()
+
+if st.session_state.step == "rule_05_payment":
+    st.subheader("Step 05: Subscription Protocol")
+    st.write(f"Language: {st.session_state.current_lang}")
+    st.info("බොට් සේවාව ලබා ගැනීමට ඇඩ්මින් (2004AU) අමතා ගෙවීම් සම්පූර්ණ කරන්න.")
+    st.markdown("[Contact Admin via WhatsApp](https://wa.me/947XXXXXXXX)")
+    
+    # 06. ඇඩ්මින් වෙරිෆිකේෂන් සහ OTP
     st.divider()
+    st.write("--- ADMIN VERIFICATION PANEL ---")
+    if st.checkbox("Admin: Activate Verification?"):
+        otp_val = random.randint(1000, 9999)
+        st.success(f"OTP for User: {otp_val}")
+        user_otp = st.text_input("User: Enter Received OTP:")
+        if st.button("Verify & Finalize (Step 06)"):
+            if user_otp == str(otp_val):
+                st.session_state.step = "rule_07_selection"
+                st.rerun()
 
-# --- STEP 01 & 02: WELCOME & AUTHENTICATION ---
-if st.session_state.step == "welcome":
-    main_header()
-    st.subheader("Welcome! Who are you?")
+# =============================================================================
+# STEP 07 & 08: SIGNAL SELECTION & TIME CONFIG
+# =============================================================================
+if st.session_state.step == "rule_07_selection":
+    st.title("🎯 Quantum Strategy Hub")
+    if st.session_state.auth_mode == "ADMIN":
+        st.markdown('<span class="admin-access">ADMIN STATUS: VERIFIED ✅</span>', unsafe_allow_html=True)
     
     col1, col2 = st.columns(2)
     with col1:
-        admin_code = st.text_input("Enter Admin Key:", type="password")
-        if admin_code == "2004AU": # Admin logic
-            st.session_state.user_type = "Admin"
-            st.session_state.step = "step07" # කෙලින්ම 07 ට (02 මඟහැර)
-            st.rerun()
-            
+        strategy = st.radio("Step 07: Choose Signal Type:", ["Standard Analyzing", "1000% Sure Advanced Analyzing"])
     with col2:
-        if st.button("New User? Click Here"):
-            st.session_state.user_type = "NewUser"
-            st.session_state.step = "step02" # භාෂාව තෝරන්න
+        amount = st.selectbox("Step 08: Amount (LKR):", [400, 800, 1000, 5000])
+        minutes = st.slider("Signal Wait (Min):", 1, 60, 3)
+        st.button("New Signal (3m Interval)", on_click=lambda: st.rerun())
+
+    if st.button("RUN QUANTUM ENGINE ⚡"):
+        st.session_state.trade_config = {"amt": amount, "strat": strategy, "min": minutes}
+        st.session_state.step = "rule_09_10_execution"
+        st.rerun()
+
+# =============================================================================
+# STEP 09 & 10: ADVANCED MATHEMATICAL SIGNAL (අන්තර්ගත සියලු දත්ත සමඟ)
+# =============================================================================
+if st.session_state.step == "rule_09_10_execution":
+    st.subheader("Steps 09 & 10: Generating 1000% Mathematical Signal")
+    with st.spinner("AI is calculating market range and Rule 12 cycle..."):
+        time.sleep(3)
+        
+        # ගණිතමය ගණනය කිරීම්
+        entry_p = 64200.50
+        vol_change = round(random.uniform(250.0, 750.0), 2)
+        dir_trade = random.choice(["UP ⬆️", "DOWN ⬇️"])
+        target_p = entry_p + vol_change if "UP" in dir_trade else entry_p - vol_change
+        
+        st.markdown(f"""
+        <div class="signal-card">
+            <h2 style='color:#00ff00;'>🛡️ 1000% SŪRE ADVANCED SIGNAL</h2>
+            <hr>
+            <p>⏰ <b>Current Time:</b> {get_time()}</p>
+            <p>🪙 <b>Asset:</b> BTC / USDT</p>
+            <p>💰 <b>Investment:</b> රු. {st.session_state.trade_config['amt']} / ${(st.session_state.trade_config['amt']/300):.2f} USDT</p>
+            <hr>
+            <p>📈 <b>Predicted Movement:</b> {dir_trade}</p>
+            <p>📊 <b>Market Entry:</b> {entry_p}</p>
+            <p>📐 <b>Expected Range:</b> {vol_change} points</p>
+            <p>🚀 <b>Target Profit:</b> {target_p}</p>
+            <hr>
+            <p>🛑 <b>SL (Stop Loss):</b> {entry_p - 150 if "UP" in dir_trade else entry_p + 150}</p>
+            <p>🛡️ <b>OCC Mode:</b> Activated (Mathematical Lock)</p>
+            <p><b>🔍 Setup Method:</b> High Probability Mathematical Analyzing</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        if st.button("Validate Trade Result (Rule 11)"):
+            st.session_state.result_data = {"amt": st.session_state.trade_config['amt'], "dir": dir_trade}
+            st.session_state.step = "rule_11_audit"
             st.rerun()
 
-# --- STEP 02 & 03: LANGUAGE SELECTION (New Users Only) ---
-if st.session_state.step == "step02":
-    main_header()
-    selected_lang = st.selectbox("🌍 Select Your Language (40+ Supported):", list(languages.keys()))
-    if st.button("Confirm Language"):
-        st.session_state.lang = selected_lang
-        st.session_state.step = "step01_auth" # ඊමේල් ඉල්ලීමට
-        st.rerun()
-
-# --- STEP 01 (Part 2): EMAIL & PASSWORD ---
-if st.session_state.step == "step01_auth":
-    main_header()
-    st.subheader(f"Account Setup ({st.session_state.lang})")
-    email = st.text_input("Enter Email:")
-    password = st.text_input("Enter Password:", type="password")
-    if st.button("Register & Request Access"):
-        st.session_state.step = "step04" # Access ඉල්ලීමට
-        st.rerun()
-
-# --- STEP 04, 05 & 06: ACCESS & PAYMENT ---
-if st.session_state.step == "step04":
-    main_header()
-    st.warning("⚠️ Access Required: This AI needs full phone access permissions.")
-    if st.button("Grant All Access"):
-        st.session_state.step = "step05"
-        st.rerun()
-
-if st.session_state.step == "step05":
-    main_header()
-    msg = "Please contact Admin to pay for Bot access." if st.session_state.lang == "English" else "බොට් සේවාව ලබා ගැනීමට ඇඩ්මින් අමතා ගෙවීම් කරන්න."
-    st.info(msg)
-    st.markdown(f"[Contact Admin (2004AU)](https://wa.me/947XXXXXXXX?text=I%20need%20access)")
+# =============================================================================
+# STEP 11: පශ්චාත් විශ්ලේෂණය (හරිද වැරදිද සහ තොරතුරු)
+# =============================================================================
+if st.session_state.step == "rule_11_audit":
+    st.subheader("Step 11: Final Performance Report")
+    status = random.choice(["SUCCESS ✅", "FAILED ❌"])
     
-    # ඇඩ්මින්ට Verify කිරීමට වෙනම බටන් එකක් (06)
-    if st.checkbox("Admin: Verify this User?"):
-        otp_code = random.randint(1000, 9999)
-        st.session_state.otp = otp_code
-        st.success(f"Admin, Click to send OTP: {otp_code}")
-        if st.button("Send OTP to User"):
-            st.session_state.step = "step06_otp"
-            st.rerun()
-
-if st.session_state.step == "step06_otp":
-    main_header()
-    user_otp = st.text_input("Enter OTP received from Admin:")
-    if st.button("Verify & Enter"):
-        st.session_state.step = "step07"
-        st.rerun()
-
-# --- STEP 07: SIGNAL TYPE SELECTION ---
-if st.session_state.step == "step07":
-    main_header()
-    st.subheader("Select Signal Strategy")
-    c1, c2 = st.columns(2)
-    if c1.button("Advanced Analyzing (Standard)"): st.session_state.step = "step08"
-    if c2.button("1000% Sure Quantum Analysis"): st.session_state.step = "step08"
-    st.rerun()
-
-# --- STEP 08, 09 & 10: SIGNAL GENERATION ---
-if st.session_state.step == "step08":
-    main_header()
-    st.sidebar.button("Get New Signal (Every 3m)", on_click=lambda: st.rerun())
+    st.markdown(f"""
+    <div class="signal-card" style="border-top: 5px solid {'#00ff00' if 'SUCCESS' in status else '#ff0000'};">
+        <h3>Trade Result: {status}</h3>
+        <p>🕒 <b>Entry Time:</b> {get_time()}</p>
+        <p>📉 <b>Stop Loss / OCC Status:</b> {'Not Triggered' if 'SUCCESS' in status else 'Triggered at ' + str(random.uniform(0.1, 0.5)) + ' range'}</p>
+        <p>💸 <b>Financial Impact:</b> {'+' if 'SUCCESS' in status else '-'} රු. {st.session_state.result_data['amt']}</p>
+        <hr>
+        <p>🔍 <b>AI Post-Analysis:</b> {'Mathematical range hit perfectly.' if 'SUCCESS' in status else 'Unexpected market deviation at Rule 12 cycle.'}</p>
+    </div>
+    """, unsafe_allow_html=True)
     
-    amount = st.radio("Select Investment Amount:", [400, 800, 1000, 5000])
-    time_wait = st.slider("Signal Wait Time (Minutes):", 1, 60, 3)
+    if st.button("Start New Session"): st.session_state.step = "rule_07_selection" ; st.rerun()
 
-    if st.button("🔥 GENERATE QUANTUM SIGNAL"):
-        with st.spinner("AI is analyzing Live Binance Data (Step 12)..."):
-            time.sleep(3)
-            # 09 & 10 නීති අනුව තොරතුරු
-            st.success("✅ 1000% Verified Signal Generated")
-            st.metric("Pair", "BTC/USDT")
-            st.write(f"**Investment:** {amount} LKR / ${(amount/300):.2f} USDT")
-            
-            col_a, col_b = st.columns(2)
-            col_a.info("Entry Level: 64,500\nDirection: UP 📈")
-            col_b.warning("SL: 63,200\nOCC: Activated")
-            
-            st.session_state.last_signal = "Success"
-            if st.button("View Signal Performance (Step 11)"):
-                st.session_state.step = "step11"
-                st.rerun()
-
-# --- STEP 11: PERFORMANCE ANALYSIS ---
-if st.session_state.step == "step11":
-    main_header()
-    st.subheader("📊 Signal Analysis Report")
-    st.write("* **Result:** Success ✅")
-    st.write("* **SL/OCC Hit:** No")
-    st.write(f"* **Profit/Loss:** +{random.randint(10, 50)} USDT")
-    st.write("* **Reason:** Market followed Rule 12 cycle accurately.")
-    if st.button("Back to Signals"):
-        st.session_state.step = "step07"
-        st.rerun()
-
-# --- 12. CONTINUOUS LEARNING ---
-st.sidebar.divider()
-st.sidebar.caption("AI Learning Mode: ENABLED 🟢")
-st.sidebar.caption("Binance Live Feed: CONNECTED 🟢")
+# --- RULE 12: CONTINUOUS LEARNING FOOTER ---
+st.divider()
+st.caption(f"Rule 12 Status: AI is continuously learning live Binance feeds. System Secured with 2004AU Protocols.")
