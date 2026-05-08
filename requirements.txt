@@ -10,3 +10,9 @@ pandas_ta
 pytz
 ccxt
 Pandas_ta
+streamlit
+pandas
+ccxt
+pandas_ta
+pytz
+plotly
