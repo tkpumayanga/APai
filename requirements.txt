@@ -3,3 +3,8 @@ pytz
 pandas
 ta
 streamlit
+streamlit
+pandas
+ccxt
+pandas_ta
+pytz
