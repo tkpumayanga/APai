@@ -8,3 +8,5 @@ pandas
 ccxt
 pandas_ta
 pytz
+ccxt
+Pandas_ta
