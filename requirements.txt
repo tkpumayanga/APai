@@ -1,7 +1,6 @@
 plotly
 pytz
-pandas
-ta
+pandas_ta
 streamlit
 streamlit
 pandas
