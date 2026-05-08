@@ -3,6 +3,3 @@ pandas
 ccxt
 pandas-ta
 pytz
-plotly
-numpy
-requests
